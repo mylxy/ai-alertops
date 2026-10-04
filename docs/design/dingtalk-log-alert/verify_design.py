@@ -35,7 +35,9 @@ def verify():
     assert {s["code"] for s in flow["states"]} == {"new", "processing", "closed"}
     assert {s["phase"] for s in flow["states"]} == {"red", "orange", "green"}
     assert scenes["first"]["ai_active"] is False, "首次告警不能误称 AI 正在运行"
-    assert scenes["start_failed"]["state"] == "processing"
+    assert scenes["start_failed"]["state"] == "new"
+    assert len(scenes) == 18 and "more_notes" not in scenes
+    assert {s["label"] for s in flow["states"]} == {"待处理", "处理中", "已处理"}
 
     for scene in scenes.values():
         assert "can_close" not in scene, "不能按 AI/MR 场景另设关闭门槛"
@@ -62,16 +64,16 @@ def verify():
     assert len({n["id"] for n in nodes}) == len(nodes), "组件 ID 重复"
     by_title = {n["title"]: n for n in nodes}
     operations = by_title["处理操作"]["props"]
-    close = next(b for b in operations["buttons"]["list"] if b["text"]["content"] == "确认关闭")
+    close = next(b for b in operations["buttons"]["list"] if b["text"]["content"] == "标记已处理")
     assert close["visible"]["valueType"] == "fixed" and close["visible"]["value"] is True
     conditions = operations["visible"]["condition"]["conditions"]
-    assert {(c["variable"], c["value"]) for c in conditions} == {("view_open", "yes"), ("note_editor_open", "false")}
+    assert {(c["variable"], c["value"]) for c in conditions} == {("view_open", "yes"), ("view_editor", "")}
     assert "view_can_close" not in json.dumps(editor)
 
-    for title in ("追加人工备注", "备注提交与取消"):
+    for title in ("添加备注输入", "添加备注提交与取消", "处理结果输入", "处理结果提交与取消"):
         conditions = by_title[title]["props"]["visible"]["condition"]["conditions"]
         assert ("view_open", "yes") in {(c["variable"], c["value"]) for c in conditions}
-    assert editor["mockData"]["localData"]["note_editor_open"] is False
+    assert editor["mockData"]["localData"]["editor_mode"] == ""
 
     trace = by_title["点击 Trace ID 复制"]["props"]
     assert trace["actionType"] == "copy" and trace["copyType"] == "common"
@@ -87,6 +89,7 @@ def verify():
         actions.extend(b.get("actionType", "none") for b in node["props"].get("buttons", {}).get("list", []))
     assert set(actions) <= {"none", "toast", "copy", "setLocalState"}
 
+    subprocess.run(["node", str(ROOT / "verify_preview.mjs")], check=True)
     print(f"通过：{len(scenes)} 个场景、{len(nodes)} 个原生组件；状态、关闭、备注、复制和新轮次约束一致。")
     print("模板 SHA256：" + hashlib.sha256((ROOT / GENERATED[0]).read_bytes()).hexdigest())
 

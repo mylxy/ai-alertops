@@ -1,0 +1,59 @@
+{
+  "group": "告警平台卡片交互测试",
+  "outTrackId": "h5-sidebar-preview-dc3f11da908e42eba98198d7cd9eb317",
+  "templateId": "ad932902-4f47-49ab-8b6a-c07f68564f16.schema",
+  "http": 200,
+  "response": {
+    "result": {
+      "deliverResults": [
+        {
+          "spaceId": "cidTsT9KoIxDgpw6xOZjS5AhQ==",
+          "spaceType": "IM_GROUP",
+          "success": true,
+          "carrierId": "rNUCCJcdZe+QmeQSXkz5lxY3I6I2Cu1LHYrUQi0C2Ac="
+        }
+      ],
+      "outTrackId": "h5-sidebar-preview-dc3f11da908e42eba98198d7cd9eb317"
+    },
+    "success": true
+  },
+  "embeddedLinkUpdate": {
+    "http": 200,
+    "response": {
+      "result": true,
+      "success": true
+    }
+  },
+  "scope": {
+    "macTextLinkRightSidebar": "visually_verified",
+    "embeddedLayout": "browser_verified",
+    "groupCardButton": "awaiting_manual_check",
+    "realCeilingEnabled": false,
+    "mobile": "not_tested",
+    "templatePublished": false,
+    "businessBackendConnected": false
+  },
+  "ceilingRedesign": {
+    "date": "2026-10-05",
+    "templateId": "733f1f1f-4747-488f-8773-0e1302a95769.schema",
+    "file": "mixed.json",
+    "sha256": "5edfe910512d82b5d6aa67d3ca90c89425a05f1c1756c9b92f77b8f64bbe236c",
+    "savedAndReloaded": true,
+    "published": false,
+    "displayCondition": "log_pending + log_processing + metric_pending + metric_processing > 0",
+    "editorPreview": {
+      "mixed": "6 items visible; obsolete number links and test footer absent",
+      "processingOnly": "3 items visible with zero pending",
+      "empty": "body text empty in preview mode"
+    },
+    "h5Prototype": {
+      "allSixCompleted": "ceiling-wrap count 0; H5 remains open",
+      "oneProcessingMetricLeft": "ceiling remains visible with total 1",
+      "reset": "ceiling reappears with total 6",
+      "consoleErrors": []
+    },
+    "realGroupTopBoxLifecycle": "not_integrated_or_tested",
+    "existingGroupTestCard": "previous sidebar-entry verification; not a real top box",
+    "closeApiSource": "https://open.dingtalk.com/document/development/close-interactive-card-ceiling"
+  }
+}

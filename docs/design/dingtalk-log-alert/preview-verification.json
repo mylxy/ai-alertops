@@ -1,219 +1,39 @@
 {
   "templateId": "03a9f40b-e81b-4efc-a12d-6a59a55a9a32.schema",
-  "version": "2026-10-04-final-review-combined-event-times",
-  "templateSha256": "72255daabcc6cd9490cb7c682921287a25eb6e7780140ad0d4549fb595190e67",
-  "nativeComponentCount": 49,
+  "version": "2026-10-05-simple-notes-and-completion",
+  "templateSha256": "7ec341eb986cdf4c44ef665f497688b9b73a34c5e7c59a6a87aa3f48a3483228",
+  "nativeComponentCount": 53,
   "mainStateCount": 3,
-  "scenarioCount": 19,
+  "scenarioCount": 18,
   "saved": true,
   "savedAndReopened": true,
   "published": false,
   "sentToGroup": false,
-  "checks": {
-    "traceIdNoDedicatedPanelOrCopyButton": true,
-    "traceLineClickCopiesExactRawId": true,
-    "traceCopySuccessFeedback": true,
-    "closedTraceStillCopies": true,
-    "missingTraceShowsExplanationWithoutCopy": true,
-    "noteEditorHiddenByDefault": true,
-    "addNoteExpandsEditor": true,
-    "cancelCollapsesEditor": true,
-    "nativeNoteInputDialogOpens": true,
-    "closureHidesAllEditorControlsEvenIfOpen": true,
-    "closedKeepsHistoryAndMrLinks": true,
-    "finalLayoutVisuallyInspected": true,
-    "environmentLabelRemoved": true,
-    "traceIdHasNoPrefix": true,
-    "traceIdAboveExceptionText": true,
-    "traceIdUsesMutedBlue": true,
-    "overviewUsesLightBlueGrayBackground": true,
-    "countAndDurationShareOneLine": true,
-    "firstEventDurationZero": true,
-    "updatedEventDurationFifteenMinutes": true,
-    "closeAvailableBeforeAiStarts": true,
-    "closeAvailableWhileAiRuns": true,
-    "closeAvailableWithUnmergedMrs": true,
-    "closeAvailableWhenAiCannotLocate": true,
-    "closeAvailableOnIncompleteDelivery": true,
-    "closeHiddenAfterManualClosureWithoutMrs": true,
-    "aiContinuesAfterCloseExplained": true,
-    "firstAndLatestShareOneLine": true,
-    "allNineteenSceneStatesAndDefaultActions": true,
-    "firstCloseHintDoesNotClaimAiRunning": true,
-    "aiStartFailureOffersManualClosure": true,
-    "earlyClosureWhileAiRunsHidesActions": true,
-    "lateAiDeliveryKeepsClosed": true,
-    "newRoundDoesNotInheritNotesOrMrs": true,
-    "newRoundTraceCopiesExactRawId": true,
-    "savedDraftReopenedWithCombinedTimes": true
-  },
-  "verifiedScenarios": [
-    "01 首次告警 · 无备注",
-    "02 AI 排查 · 无备注",
-    "03 AI 排查 · 一条备注",
-    "04 修复交付 · 合并 0/2",
-    "05 部分合并 · 合并 1/2",
-    "06 全部合并 · 多条备注",
-    "07 上线观察 · 四条备注",
-    "08 上线验证后关闭",
-    "09 AI 定位没问题",
-    "10 AI 无法定位",
-    "11 人工记录原因与计划",
-    "12 人工确认无需修复 · 无备注",
-    "13 AI 交付未完成",
-    "14 上游缺少 Trace ID",
-    "15 AI 无法定位 · 人工上线后关闭",
-    "16 AI 未能启动 · 人工处理",
-    "17 人工先关闭 · AI 仍在运行",
-    "18 AI 后续交付 · 保持已关闭",
-    "19 关闭后新告警 · 新一轮"
+  "testDestination": "当前用户的钉钉卡片助手",
+  "browserChecks": [
+    "首次告警显示待处理、累计 1 次、持续 0 分钟，默认两个操作入口。",
+    "首条备注提交后标题变为处理中，橙色标题栏与正文同步变化。",
+    "第二条备注追加保留第一条，按最新在前展示；再次展开的输入为空。",
+    "处理结果为空时提交不会结束任务；填写结果后变为已处理，并隐藏编辑入口、保留备注。",
+    "场景 07 四条历史备注显示最近三条与查看全部入口，终态无编辑按钮。",
+    "场景 15 AI 未能启动仍待处理；场景 17 迟到 AI 交付保持已处理；场景 18 新轮次待处理。",
+    "更新客户端初始化回退后重新导入、保存、重新打开，并再次提交首条备注确认橙色处理中。"
   ],
-  "verificationMethod": "钉钉官方设计器预览：逐一切换 19 个场景，核对主状态、增加备注与确认关闭的显隐。点击首次场景关闭入口，确认不再误称 AI 正在运行；检查新轮次数据，点击其 ID 并与剪贴板原值比较。检查首次与最近时间同一行的布局；保存、刷新列表并重新打开草稿，确认默认场景与合并时间布局持久保存。",
+  "automatedChecks": [
+    "生成文件可复现，18 个场景时间和主状态约束一致。",
+    "实际生成表达式及按钮本地更新：备注追加四条、最近三条、取消、空白输入、无 MR 完成、终态拒绝旧备注提交、新轮次隔离。",
+    "缺少设计器本地场景选择时回退全局状态，默认次数与时间可用。"
+  ],
+  "clientObservations": [
+    "Mac 的钉钉卡片助手收到日志模拟卡和独立编号链接卡。",
+    "首次日志测试投放缺少设计器 localData，导致次数与时间等场景数据为空；生成器已增加默认场景回退。最新草稿已在设计器复验，未确认修正后真机渲染结果。",
+    "独立编号链接卡在 Mac 显示说明文字和 01、02、03 按钮。原生自动点击工具返回无可操作窗口，未完成按钮点击后的侧栏验证。"
+  ],
   "limits": [
-    "当前为设计稿，AI、MR 与告警均为模拟数据。",
-    "关闭、备注提交、MR 与历史入口只展示设计说明；真实关闭表单、保存、跳转及权限尚未接入。",
-    "聚合去重、单轮一次 AI、关闭不中断 AI、新旧轮次隔离及并发一致性是后续服务端验收条件，未进行真实业务验证。",
-    "本次逐场景复核状态与按钮并复查新轮次复制和最终布局；备注输入等交互沿用此前验证。",
-    "模板已保存并重新打开确认，未发布，未向群发送卡片。"
-  ],
-  "scenarioChecks": [
-    {
-      "scene": "01 首次告警 · 无备注",
-      "status": "日志告警 · 待处理",
-      "closeVisible": true,
-      "addVisible": true,
-      "passed": true
-    },
-    {
-      "scene": "02 AI 排查 · 无备注",
-      "status": "日志告警 · 处理中",
-      "closeVisible": true,
-      "addVisible": true,
-      "passed": true
-    },
-    {
-      "scene": "03 AI 排查 · 一条备注",
-      "status": "日志告警 · 处理中",
-      "closeVisible": true,
-      "addVisible": true,
-      "passed": true
-    },
-    {
-      "scene": "04 修复交付 · 合并 0/2",
-      "status": "日志告警 · 处理中",
-      "closeVisible": true,
-      "addVisible": true,
-      "passed": true
-    },
-    {
-      "scene": "05 部分合并 · 合并 1/2",
-      "status": "日志告警 · 处理中",
-      "closeVisible": true,
-      "addVisible": true,
-      "passed": true
-    },
-    {
-      "scene": "06 全部合并 · 多条备注",
-      "status": "日志告警 · 处理中",
-      "closeVisible": true,
-      "addVisible": true,
-      "passed": true
-    },
-    {
-      "scene": "07 上线观察 · 四条备注",
-      "status": "日志告警 · 处理中",
-      "closeVisible": true,
-      "addVisible": true,
-      "passed": true
-    },
-    {
-      "scene": "08 上线验证后关闭",
-      "status": "日志告警 · 已关闭",
-      "closeVisible": false,
-      "addVisible": false,
-      "passed": true
-    },
-    {
-      "scene": "09 AI 定位没问题",
-      "status": "日志告警 · 处理中",
-      "closeVisible": true,
-      "addVisible": true,
-      "passed": true
-    },
-    {
-      "scene": "10 AI 无法定位",
-      "status": "日志告警 · 处理中",
-      "closeVisible": true,
-      "addVisible": true,
-      "passed": true
-    },
-    {
-      "scene": "11 人工记录原因与计划",
-      "status": "日志告警 · 处理中",
-      "closeVisible": true,
-      "addVisible": true,
-      "passed": true
-    },
-    {
-      "scene": "12 人工确认无需修复 · 无备注",
-      "status": "日志告警 · 已关闭",
-      "closeVisible": false,
-      "addVisible": false,
-      "passed": true
-    },
-    {
-      "scene": "13 AI 交付未完成",
-      "status": "日志告警 · 处理中",
-      "closeVisible": true,
-      "addVisible": true,
-      "passed": true
-    },
-    {
-      "scene": "14 上游缺少 Trace ID",
-      "status": "日志告警 · 处理中",
-      "closeVisible": true,
-      "addVisible": true,
-      "passed": true
-    },
-    {
-      "scene": "15 AI 无法定位 · 人工上线后关闭",
-      "status": "日志告警 · 已关闭",
-      "closeVisible": false,
-      "addVisible": false,
-      "passed": true
-    },
-    {
-      "scene": "16 AI 未能启动 · 人工处理",
-      "status": "日志告警 · 处理中",
-      "closeVisible": true,
-      "addVisible": true,
-      "passed": true
-    },
-    {
-      "scene": "17 人工先关闭 · AI 仍在运行",
-      "status": "日志告警 · 已关闭",
-      "closeVisible": false,
-      "addVisible": false,
-      "passed": true
-    },
-    {
-      "scene": "18 AI 后续交付 · 保持已关闭",
-      "status": "日志告警 · 已关闭",
-      "closeVisible": false,
-      "addVisible": false,
-      "passed": true
-    },
-    {
-      "scene": "19 关闭后新告警 · 新一轮",
-      "status": "日志告警 · 待处理",
-      "closeVisible": true,
-      "addVisible": true,
-      "passed": true
-    }
-  ],
-  "previouslyVerifiedInteractions": [
-    "主样例 ID 精确复制、关闭后复制及缺失 ID 无复制交互",
-    "备注展开、取消收起、原生输入窗口及关闭后编辑控件隐藏",
-    "已有 MR 各自入口及历史记录保留"
+    "设计稿使用模拟身份、时间、告警和 MR；备注与完成仅本地演示，不保存到业务服务。",
+    "处理记录与 MR 入口仍为说明提示，未接真实地址。",
+    "服务端权限、请求去重、并发终态禁写、AI 和 MR 通知未实现或验证。",
+    "53 个组件超过设计器建议的 40 个；平台给出组件数量性能提示，未进行客户端性能验收。",
+    "没有完成 Mac 侧栏或手机底部面板的真机点击验证；详见消息详情跳转核查。"
   ]
 }
