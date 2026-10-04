@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-05",
+  "template_id": "c40f5afb-096e-4088-af73-d5650bd3f3e2.schema",
+  "template_sha256": "8adeceaf23553aa470f83041d47864ab79c3c8e931fadb4ec7c6247764498bd0",
+  "official_designer": {
+    "saved_and_reloaded": true,
+    "published": false,
+    "verified": [
+      "待处理默认状态",
+      "首条备注后处理中",
+      "第二条备注追加",
+      "模拟恢复后已恢复且隐藏编辑入口"
+    ]
+  },
+  "local_h5": {
+    "file": "../../docs/design/dingtalk-log-alert/alert-workbench.prototype.html",
+    "verified": [
+      "移除指标走势图和额外卡片装饰",
+      "指标结构对照官方模板",
+      "日志结构对照官方模板",
+      "指标备注与恢复只读",
+      "日志备注与完成只读",
+      "恢复时间与持续时长",
+      "浏览器无脚本错误"
+    ]
+  },
+  "group_test": {
+    "name": "告警平台卡片交互测试",
+    "metric_out_track_id": "metric-card-design-1525b8cde4eb46b0a0b8c56aea7c122e",
+    "metric_delivery_success": true,
+    "metric_parameters_initialized": true,
+    "log_out_track_id": "log-card-design-338a718f97514ac99506849816525374",
+    "log_delivery_success": true,
+    "h5_link_http": 200,
+    "user_confirmed": "能看到正文和按钮",
+    "native_click_test": "工具读取的卡片区域为空白，用户已确认实际可见；未由代理完成群内按钮点击验证"
+  },
+  "boundaries": [
+    "草稿和群卡均为模拟设计，未接入业务持久化",
+    "群卡与 H5 未连接同一后端，H5 群消息联动为本地模拟",
+    "H5 的 127.0.0.1 链接仅运行预览服务的 Mac 可访问，手机尚无部署地址"
+  ]
+}
