@@ -19,8 +19,10 @@ const config = ref<Row>({}),
   entity = ref("alert_project"),
   editing = ref<Row | null>(null),
   selected = ref<Row | null>(null);
-const isH5 = location.pathname.startsWith("/h5/groups/"),
-  groupID = location.pathname.split("/")[3] || "";
+const entryQuery = new URLSearchParams(location.search),
+  isGroupEntry = location.pathname === "/" && entryQuery.has("openConversationId"),
+  isH5 = location.pathname.startsWith("/h5/groups/") || isGroupEntry,
+  groupID = ref(location.pathname.split("/")[3] || "");
 const page = ref(isH5 ? "h5" : "alerts"),
   nextCursor = ref(""),
   filterType = ref(""),
@@ -70,7 +72,9 @@ const currentTitle = computed(() =>
 const unfinished = computed(() =>
   groups.value.reduce((sum, g) => sum + Number(g.unfinished || 0), 0),
 );
-const currentGroup = computed(() => groups.value.find((g) => g.id === groupID));
+const currentGroup = computed(() =>
+  groups.value.find((g) => g.id === groupID.value),
+);
 const round = computed(() => selected.value?.round || {});
 const ai = computed(() => selected.value?.ai_tasks?.[0]);
 const evidence = computed(() => selected.value?.evidence || {});
@@ -134,7 +138,8 @@ async function logout() {
 async function queryRounds(append = false) {
   const query = new URLSearchParams();
   if (isH5) {
-    query.set("group_id", groupID);
+    if (!groupID.value) throw new Error("当前告警群尚未配置，请联系管理员");
+    query.set("group_id", groupID.value);
     if (!showHistory.value) query.set("unfinished", "1");
   } else if (filterGroup.value) query.set("group_id", filterGroup.value);
   for (const [k, v] of Object.entries({
@@ -160,6 +165,19 @@ async function refresh() {
   if (!user.value) return;
   const result = await api("/api/groups");
   groups.value = result.items;
+  // 酷应用只提供外部群标识；登录后映射到已配置群，未知群不能退回全平台查询。
+  if (isGroupEntry) {
+    groupID.value =
+      groups.value.find(
+        (g) => g.conversation_id === entryQuery.get("openConversationId"),
+      )?.id || "";
+    if (!groupID.value) {
+      member.value = false;
+      rounds.value = [];
+      selected.value = null;
+      throw new Error("当前告警群尚未配置，请联系管理员");
+    }
+  }
   if ((page.value === "alerts" || isH5) && !loadedMore.value)
     await queryRounds();
   else if (page.value === "statistics") {
@@ -181,7 +199,7 @@ async function refresh() {
     selected.value = await api("/api/rounds/" + round.value.id);
   if (isH5) {
     try {
-      await api("/api/h5/groups/" + groupID + "/membership");
+      await api("/api/h5/groups/" + groupID.value + "/membership");
       member.value = true;
     } catch {
       member.value = false;
@@ -200,7 +218,7 @@ async function navigate(id: string) {
 async function select(item: Row) {
   await safely(async () => {
     const detail = await api("/api/rounds/" + item.id);
-    if (isH5 && detail.round.alert_group_id !== groupID)
+    if (isH5 && detail.round.alert_group_id !== groupID.value)
       throw new Error("此告警不属于当前群");
     selected.value = detail;
     if (isH5) {
@@ -1068,7 +1086,12 @@ onUnmounted(() => {
               业务记录已经保存；群卡片存在待核对或失败的同步任务，平台会继续补偿。
             </p>
             <div v-for="c in selected.cards" class="sync-row">
-              <span>{{ label(c.delivery_status) }}</span
+              <span>{{
+                c.delivery_status === "SENT" &&
+                Number(c.sent_version) < Number(c.desired_version)
+                  ? "待同步"
+                  : label(c.delivery_status)
+              }}</span
               ><small>版本 {{ c.sent_version }} / {{ c.desired_version }}</small
               ><span class="danger-text">{{ c.last_error }}</span>
             </div>
