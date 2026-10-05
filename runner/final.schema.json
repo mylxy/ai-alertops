@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["business_result", "summary", "repos"],
+  "properties": {
+    "business_result": {"type": "string", "enum": ["FIX_PROPOSED", "NO_ISSUE", "UNRESOLVED"]},
+    "summary": {"type": "string", "minLength": 1, "maxLength": 16000},
+    "repos": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["repo_code", "required_mr_count"], "properties": {"repo_code": {"type": "string"}, "required_mr_count": {"type": "integer", "minimum": 1, "maximum": 100}}}}
+  }
+}
