@@ -210,6 +210,7 @@ func (a *App) roundDetail(ctx context.Context, rid int64) (Row, error) {
 		out["evidence"] = d
 	}
 	out["all_merged"] = allMerged(out)
+	out["presentation"] = presentationParams(Row{"card_type": r.S("alert_type"), "detail": out})
 	return out, nil
 }
 

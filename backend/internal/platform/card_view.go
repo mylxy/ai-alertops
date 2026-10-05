@@ -118,5 +118,97 @@ func presentationParams(view Row) map[string]string {
 			p[typ+"_count"] = fmt.Sprint(v)
 		}
 	}
+	for _, key := range []string{"log_count", "metric_count", "total_count"} {
+		p["runtime_"+key] = p[key]
+	}
+	completeDesignParams(view, p)
 	return p
+}
+
+// completeDesignParams 为原设计的独立信息块提供真实字段，缺失来源值不使用演示值补齐。
+func completeDesignParams(view Row, p map[string]string) {
+	p["has_trace"], p["notes_empty"], p["has_notes"], p["has_mrs"] = "no", "yes", "no", "no"
+	p["history_label"] = "查看完整处理记录  ↗"
+	for n := 1; n <= 3; n++ {
+		p[fmt.Sprintf("note_%d_visible", n)] = "no"
+	}
+	for n := 1; n <= 8; n++ {
+		for _, f := range []string{"label", "status", "url", "visible"} {
+			p[fmt.Sprintf("mr_%d_%s", n, f)] = ""
+		}
+	}
+	if d, ok := view["detail"].(Row); ok {
+		r := d["round"].(Row)
+		p["project"], p["service"] = r.S("project_name"), r.S("resource_name")
+		p["duration"] = fmt.Sprintf("%d 秒", max(int64(0), r.I("last_event_time")-r.I("first_event_time"))/1000)
+		p["first_seen"], p["latest_seen"] = cardTime(r.I("first_event_time")), cardTime(r.I("last_event_time"))
+		p["progress_heading"], p["progress_body"] = "等待 AI 开始处理", ""
+		if r.S("round_status") == "PROCESSING" {
+			p["progress_heading"] = "正在处理"
+		}
+		records, _ := d["records"].([]Row)
+		// 记录按时间正序返回，最后一条自动进展是当前可验证的 AI 说明。
+		for _, record := range records {
+			if record.S("actor_type") == "AI" {
+				p["progress_body"] = truncate(record.S("content"), 1500)
+			}
+		}
+		if p["ai_summary"] != "" {
+			p["progress_body"] = strings.TrimSpace(p["ai_summary"] + "\n" + p["progress_body"])
+		}
+		if r.S("round_status") == "HANDLED" {
+			p["progress_heading"], p["progress_body"] = "人工处理完成", r.S("result_text")
+		}
+		if e, ok := d["evidence"].(Row); ok {
+			p["trace_id"], p["log_excerpt"] = e.S("trace_id"), truncate(e.S("message"), 1000)
+			if p["trace_id"] != "" {
+				p["has_trace"] = "yes"
+			}
+			if r.S("alert_type") == "LOG" {
+				p["service"] = e.S("service_key")
+			}
+			p["metric_value"], p["metric_rule"], p["metric_key"] = e.S("metric_value_raw"), e.S("metric_rule"), e.S("metric_key")
+			p["metric_color"], p["monitor_hint"] = "common_red1_color", "监控仍处于告警状态，等待有效恢复事件。"
+			if r.S("round_status") == "RECOVERED" {
+				p["metric_color"], p["monitor_hint"] = "common_green1_color", "监控已确认恢复，本轮告警自动结束。"
+			}
+			if e.S("value_status") == "MISSING" {
+				p["metric_value"] = "上游未提供恢复值"
+			}
+			if p["metric_rule"] == "" {
+				p["metric_rule"] = "上游未提供阈值或持续条件"
+			}
+		}
+		if p["note_count"] != "0" {
+			p["notes_empty"], p["has_notes"] = "no", "yes"
+		}
+		for n := 1; n <= 3; n++ {
+			if p[fmt.Sprintf("note_%d_meta", n)] != "" {
+				p[fmt.Sprintf("note_%d_visible", n)] = "yes"
+			}
+		}
+		mrs, _ := d["merge_requests"].([]Row)
+		merged := 0
+		for n, m := range mrs {
+			if m.S("merge_status") == "MERGED" {
+				merged++
+			}
+			if n >= 8 {
+				continue
+			}
+			prefix := fmt.Sprintf("mr_%d_", n+1)
+			p[prefix+"label"] = m.S("repository_id") + " #" + m.S("display_number") + "  ↗"
+			p[prefix+"status"] = map[string]string{"OPEN": "待合并", "MERGED": "已合并", "CLOSED": "关闭未合并"}[m.S("merge_status")]
+			p[prefix+"url"], p[prefix+"visible"] = m.S("url"), "yes"
+		}
+		if len(mrs) > 0 {
+			p["has_mrs"] = "yes"
+		}
+		p["mr_progress"] = fmt.Sprintf("%d/%d 已合并", merged, len(mrs))
+		if len(mrs) > 8 {
+			p["mr_progress"] += " · 完整列表见处理记录"
+		}
+	} else if n, ok := view["notice"].(Row); ok {
+		p["project"], p["service"], p["message"] = n.S("project_name"), n.S("service_key"), n.S("message")
+	}
 }

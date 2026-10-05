@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { api, APIError, duration, labels, time, type Row } from "./api";
+import AlertCard from "./AlertCard.vue";
+const cardDetails = ref<Record<string, Row>>({});
 
 const user = ref<Row | null>(null),
   options = ref<Row>({}),
@@ -107,6 +109,7 @@ async function safely(fn: () => Promise<void>) {
       user.value = null;
       selected.value = null;
       rounds.value = [];
+      cardDetails.value = {};
     }
   }
 }
@@ -133,6 +136,7 @@ async function logout() {
     user.value = null;
     selected.value = null;
     rounds.value = [];
+    cardDetails.value = {};
   });
 }
 async function queryRounds(append = false) {
@@ -160,6 +164,15 @@ async function queryRounds(append = false) {
   loadedMore.value = append;
   rounds.value = append ? [...rounds.value, ...result.items] : result.items;
   nextCursor.value = result.next_cursor;
+  if (isH5) {
+    // 复用受保护的轮次详情接口；每批最多四个请求，避免列表并发压垮服务。
+    const details: Record<string, Row> = append ? { ...cardDetails.value } : {};
+    for (let i = 0; i < result.items.length; i += 4) {
+      const batch = await Promise.all(result.items.slice(i, i + 4).map((item: Row) => api("/api/rounds/" + item.id)));
+      for (const detail of batch) details[detail.round.id] = detail;
+    }
+    cardDetails.value = details;
+  }
 }
 async function refresh() {
   if (!user.value) return;
@@ -174,6 +187,7 @@ async function refresh() {
     if (!groupID.value) {
       member.value = false;
       rounds.value = [];
+      cardDetails.value = {};
       selected.value = null;
       throw new Error("当前告警群尚未配置，请联系管理员");
     }
@@ -514,38 +528,10 @@ onUnmounted(() => {
             <p>已结束的事项保留在历史记录中。</p>
           </div>
           <div v-else-if="isH5" class="h5-list">
-            <article
-              v-for="item in rounds"
-              :key="item.id"
-              class="alert-tile"
-              @click="select(item)"
-              tabindex="0"
-              @keydown.enter="select(item)"
-            >
-              <div class="tile-top">
-                <span :class="['type-mark', item.alert_type.toLowerCase()]">{{
-                  item.alert_type === "LOG" ? "!" : "↗"
-                }}</span
-                ><strong>{{ label(item.alert_type) }}</strong
-                ><span :class="['pill', item.round_status]">{{
-                  label(item.round_status)
-                }}</span>
-              </div>
-              <h3>{{ item.title }}</h3>
-              <dl>
-                <dt>告警编号</dt>
-                <dd>{{ item.alert_no }}</dd>
-                <dt>业务项目</dt>
-                <dd>{{ item.project_name }}</dd>
-                <dt>首次发生</dt>
-                <dd>{{ time(item.first_event_time) }}</dd>
-                <dt>发生次数</dt>
-                <dd>
-                  {{ item.event_count }} · {{ label(item.count_quality) }}
-                </dd>
-              </dl>
-              <footer>查看详情与处理记录 <span>→</span></footer>
-            </article>
+            <template v-for="item in rounds" :key="item.id">
+              <AlertCard v-if="cardDetails[item.id]" :detail="cardDetails[item.id]" :can-operate="member" @history="select(item)" @saved="notice = '处理记录已保存，群卡片正在同步。'; safely(refresh)" @failure="(e: unknown) => safely(async () => { throw e; })" />
+              <div v-else class="panel">正在加载 {{ item.title }}…</div>
+            </template>
           </div>
           <div v-else class="table-wrap">
             <table>

@@ -233,7 +233,7 @@ func (d *DingTalk) Topbox(ctx context.Context, r Row) error {
 		path = "/v2.0/im/topBoxes"
 		payload["cardTemplateId"] = r.S("template_id")
 		payload["cardData"] = Row{"cardParamMap": CardParams(r)}
-		payload["platforms"] = "android,ios,win,mac"
+		payload["platforms"] = "ios|mac|android|win"
 	}
 	var out struct {
 		Success bool `json:"success"`

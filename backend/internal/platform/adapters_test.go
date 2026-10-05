@@ -68,6 +68,11 @@ func TestDingTalkTransport(t *testing.T) {
 				t.Error(input)
 			}
 			result = map[string]any{"success": true}
+		case "/v2.0/im/topBoxes":
+			if input["platforms"] != "ios|mac|android|win" {
+				t.Errorf("吊顶端列表必须按官方协议以竖线分隔：%v", input["platforms"])
+			}
+			result = map[string]any{"success": true}
 		case "/v2.0/im/topBoxes/close":
 			if input["openConversationId"] != "group" || input["conversationType"] != float64(1) {
 				t.Error(input)
@@ -94,6 +99,10 @@ func TestDingTalkTransport(t *testing.T) {
 	yes, e := d.Member(context.Background(), "group", identity)
 	if e != nil || !yes {
 		t.Fatalf("成员关系 %t %v", yes, e)
+	}
+	// 执行：开启吊顶，验证四端选择字段，不把接口成功当成客户端显示证据。
+	if err := d.Topbox(context.Background(), platform.Row{"template_id": "template", "out_track_id": "topbox", "conversation_id": "group", "desired_status": "OPEN"}); err != nil {
+		t.Fatal(err)
 	}
 	card := platform.Row{"template_id": "template", "out_track_id": "stable", "conversation_id": "group", "sent_version": 0, "h5_url": "https://alerts.example/h5/groups/1?round=2"}
 	if e = d.Card(context.Background(), card); e != nil {
