@@ -6,3 +6,5 @@ cd "$(dirname "$0")/.."
 (cd backend && go vet ./... && go test -race -tags=integration ./... -count=1 -timeout=180s)
 (cd frontend && npm run build)
 python3 -m py_compile runner/run.py runner/alertops_action.py runner/git_askpass.py cards/build_templates.py
+
+python3 -B -m unittest discover -s runner -p 'test_*.py'

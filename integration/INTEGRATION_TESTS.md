@@ -48,3 +48,7 @@ go test -race -tags=integration ./internal/platform -run TestMRReconciliation -c
 浏览器验收已操作管理员登录、后台详情、H5 连续处理、指标恢复和历史；桌面 1440×960、移动 390×844。移动视口验证无横向溢出。该移动尺寸测试不等同于真实手机钉钉容器测试。
 
 真实钉钉已可通过桌面自动化读取现有测试群，但本平台尚未配置其企业应用凭据、发布模板和 Codeup 测试仓库；未在现有用户草稿上发消息。真实企业授权、模板编译/发布、原生吊顶、真手机、实际 MR 和模型修复不能据此标记通过。详见[实施与验收记录](../docs/implementation/issue-1.md)。
+
+## Runner 本地修复流程
+
+`python3 -B -m unittest discover -s runner -p 'test_*.py'` 验证诊断证据先于进度上报和 Git 副作用、真实本地复现/修复/测试/提交、验证后变更阻止交付。仅操作临时 Git 仓库；平台与 MR 协议使用替身，不调用模型、钉钉或远程代码托管。已纳入 `scripts/check.sh`。
