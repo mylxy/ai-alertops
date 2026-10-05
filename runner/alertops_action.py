@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import stat
 import sys
 import time
 import urllib.error
@@ -94,8 +95,31 @@ def git(repo, *args):
 
 def locate(args):
     """定位后先登记必要仓库，再从最新 origin/master 建普通分支。"""
+    # 定位证据随任务归档并写入处理记录；先校验，避免无证据就创建分支。
+    raw = Path(args.evidence)
+    if not raw.is_absolute():
+        raw = WORKSPACE / raw
+    path = raw.resolve(strict=True)
+    if path != raw or WORKSPACE not in path.parents:
+        raise RuntimeError("定位证据必须是工作区内的普通文件，不能使用链接")
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(fd, "rb") as stream:
+        if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+            raise RuntimeError("定位证据必须是普通文件")
+        data = stream.read(12001)
+    if len(data) > 12000:
+        raise RuntimeError("定位证据不得超过 12000 字节")
+    report = json.loads(data)
+    fields = {"evidence", "location", "reproduction", "limitations"}
+    if not isinstance(report, dict) or set(report) != fields or any(not isinstance(value, str) or not value.strip() for value in report.values()):
+        raise RuntimeError("定位证据需要非空 evidence、location、reproduction、limitations")
+    summary = args.summary + "\n" + json.dumps(report, ensure_ascii=False)
+    if not args.summary.strip() or len(summary.encode("utf-8")) > 16000:
+        raise RuntimeError("定位结论为空或超过平台长度限制")
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
+    (ARTIFACTS / "diagnosis.json").write_text(json.dumps(report, ensure_ascii=False))
     codes = args.repos.split(",") if args.repos else []
-    current = emit("ROOT_CAUSE_LOCATED", args.summary, [{"repo_code": code} for code in codes])
+    current = emit("ROOT_CAUSE_LOCATED", summary, [{"repo_code": code} for code in codes])
     for repo in current["repos"]:
         if repo["repo_code"] not in codes:
             continue
@@ -151,7 +175,7 @@ def main():
     """只开放定位、验证和交付三类有限操作。"""
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(dest="command", required=True)
-    p = commands.add_parser("located"); p.add_argument("--summary", required=True); p.add_argument("--repos", default="")
+    p = commands.add_parser("located"); p.add_argument("--summary", required=True); p.add_argument("--repos", default=""); p.add_argument("--evidence", required=True)
     p = commands.add_parser("verify"); p.add_argument("--repo", required=True); p.add_argument("--result", choices=["PASSED", "FAILED", "UNAVAILABLE"], required=True); p.add_argument("--summary", required=True)
     p = commands.add_parser("deliver"); p.add_argument("--repo", required=True); p.add_argument("--key", default="primary"); p.add_argument("--title", required=True); p.add_argument("--description", default="")
     args = parser.parse_args()

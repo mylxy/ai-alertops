@@ -105,3 +105,9 @@ JSON 请求；错误返回 `{"error":"原因"}`。内部 BIGINT ID 对浏览器�
 3. 测试 Codeup 仓库完成普通分支、真实推送、三个 MR、评审与实际合并、重复/提前 Hook、合并提交核对。
 4. 固定测试服务器配置三个 clone、项目依赖和模型 API 凭据，运行真实 Codex 修复；记录成本、超时、退出与失败现场。当前默认镜像只提供通用 Git/Python/Node/Codex，Java/Go 等业务依赖应按项目派生镜像固定版本。
 5. 注入网络未知响应并证明不会重复建卡/MR或覆盖新状态，完成提供方协调验收后再标记 V1 生产交付通过。
+
+## AI 定位证据
+
+Runner 在工作区写入 `diagnosis.json`，再调用 `alertops-action located --summary "定位结论" --repos "repo_code" --evidence diagnosis.json`。证据必须包含非空字符串 `evidence`、`location`、`reproduction`、`limitations`，文件最多 12000 字节；定位结论与 JSON 合计最多 16000 个 UTF-8 字节。只接受工作区内普通文件，拒绝链接和越界路径。校验通过后归档到任务产物并追加平台处理记录，再建立修复分支。无法复现或缺少数据时须明确记录，不得编造根因。
+
+Debug 范围限已授权数据的只读查询及容器内受控复现，不包括生产进程调试、生产数据修改或部署。该证据校验不替代日志脱敏和操作者对诊断真实性的审查。
