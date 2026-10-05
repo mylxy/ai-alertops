@@ -1,0 +1,19 @@
+[Unit]
+Description=AI AlertOps platform and Docker dispatcher
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=alertops
+WorkingDirectory=/srv/alertops/app
+EnvironmentFile=/etc/alertops/platform.env
+ExecStart=/srv/alertops/app/backend/bin/alertops -listen 127.0.0.1:18080 -frontend /srv/alertops/app/frontend/dist -runner
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

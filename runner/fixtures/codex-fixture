@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+"""仅用于容器协议验收；不会调用模型或外部 Git。"""
+import json
+from pathlib import Path
+import sys
+import time
+
+if "--version" in sys.argv:
+    print("codex fixture (deterministic protocol test)")
+    sys.exit(0)
+prompt = sys.stdin.read()
+if "alertops-action located" not in prompt:
+    sys.exit(2)
+time.sleep(2)
+path = Path(sys.argv[sys.argv.index("--output-last-message") + 1])
+mode_file = Path("/workspace/.fixture-mode")
+mode = mode_file.read_text().strip() if mode_file.exists() else "success"
+if mode == "nonzero":
+    sys.exit(7)
+if mode == "missing":
+    sys.exit(0)
+if mode == "invalid":
+    path.write_text('{"business_result":"FIX_PROPOSED"}')
+    sys.exit(0)
+if mode == "log-link":
+    sentinel = Path("/workspace/.fixture-sentinel").read_text().strip()
+    Path("/task/container.log").symlink_to(sentinel)
+result = "UNRESOLVED" if mode == "unresolved" else "NO_ISSUE"
+path.write_text(json.dumps({"business_result": result, "summary": "受控容器验收完成，无代码改动", "repos": []}, ensure_ascii=False))
+print(json.dumps({"type": "test.fixture.completed"}))
