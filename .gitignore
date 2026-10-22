@@ -7,3 +7,4 @@ frontend/dist/
 
 __pycache__/
 *.pyc
+AGENTS.override.md
