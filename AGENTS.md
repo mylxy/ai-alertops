@@ -46,5 +46,5 @@ merge(<范围>): <中文任务摘要>
 
 ### 领域文档
 
-采用单上下文布局：根目录 `CONTEXT.md` 和 `docs/adr/`。
+采用单上下文布局：根目录 `GLOSSARY.md` 和 `docs/adr/`。
 探索仓库、使用领域术语或提出架构变更前，阅读 `docs/agents/domain.md`。

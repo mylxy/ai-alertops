@@ -50,4 +50,4 @@ ALERTOPS_TEST_DOCKER=1 ALERTOPS_TEST_DSN='root:LOCAL_PASSWORD@tcp(127.0.0.1:1330
 - [已确认设计](docs/design/platform/README.md)、[23 表数据库模型](docs/design/platform/database.md)、[DDL](backend/internal/platform/schema/001_initial.sql)
 - [AI 执行流程](docs/design/platform/ai-runtime.md)、[执行器](runner/run.py)、[受限 Git/MR 业务命令](runner/alertops_action.py)
 - [API 与运行说明](docs/implementation/operations.md)、[验收记录和实现假设](docs/implementation/issue-1.md)
-- [领域术语](CONTEXT.md)、[原卡片设计](docs/design/dingtalk-log-alert/README.md)
+- [领域术语](GLOSSARY.md)、[原卡片设计](docs/design/dingtalk-log-alert/README.md)
